@@ -205,7 +205,7 @@ class WarehouseServiceTest {
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> warehouseService.updateWarehouse(1L, detailsToUpdate));
         assertEquals("El nombre del almacén es obligatorio.", exception.getMessage());
-        verify(warehouseRepository, times(1)).findById(1L)); // Se busca el almacén antes de validar datos
+        verify(warehouseRepository, times(1)).findById(1L); // Se busca el almacén antes de validar datos
         verify(warehouseRepository, never()).save(any(Warehouse.class));
     }
 
@@ -220,7 +220,7 @@ class WarehouseServiceTest {
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> warehouseService.updateWarehouse(1L, detailsToUpdate));
         assertEquals("Ya existe otro almacén con el nombre: Depósito Norte", exception.getMessage());
-        verify(warehouseRepository, times(1)).findById(1L));
+        verify(warehouseRepository, times(1)).findById(1L);
         verify(warehouseRepository, times(1)).findByName("Depósito Norte");
         verify(warehouseRepository, never()).save(any(Warehouse.class));
     }

@@ -17,7 +17,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -182,7 +181,7 @@ class RoleServiceTest {
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> roleService.updateRole(1L, detailsToUpdate));
         assertEquals("El nombre del rol es obligatorio.", exception.getMessage());
-        verify(roleRepository, times(1)).findById(1L));
+        verify(roleRepository, times(1)).findById(1L);
         verify(roleRepository, never()).save(any(Role.class));
     }
 
