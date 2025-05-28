@@ -1,0 +1,39 @@
+# .github/workflows/maven-ci.yml
+name: Java CI with Maven for Inventory Management
+
+# Define cuándo se ejecutará este flujo de trabajo
+on:
+  push: # Se ejecuta en cada push a estas ramas
+    branches: [ "main", "develop" ] # Ajusta a tus ramas principales
+  pull_request: # También en cada pull request a estas ramas
+    branches: [ "main", "develop" ]
+
+jobs:
+  build_and_test: # Nombre del "trabajo" (puedes tener varios)
+    runs-on: ubuntu-latest # Especifica el tipo de runner (servidor) que se usará
+
+    steps:
+      # Paso 1: "Checkout" - Descarga tu código al runner
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Acción predefinida por GitHub
+
+      # Paso 2: Configurar JDK (Java Development Kit)
+      - name: Set up JDK 21 # Puedes cambiar a la versión de Java que uses (17, 21, etc.)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21' # Asegúrate que coincida con tu pom.xml
+          distribution: 'temurin' # Distribución de Java (Temurin es una buena opción)
+          cache: maven # Habilita el caché para las dependencias de Maven (acelera builds futuros)
+
+      # Paso 3: Construir con Maven y ejecutar pruebas
+      # Este comando compilará tu proyecto, ejecutará los tests unitarios y empaquetará la aplicación.
+      - name: Build and test with Maven
+        run: mvn -B package --file pom.xml # El flag -B es para "batch mode" (evita salida interactiva)
+
+      # Opcional: Paso 4: Subir artefactos de la compilación (ej. el .jar)
+      # Esto es útil si quieres descargar el archivo .jar compilado después de que el workflow termine.
+      # - name: Upload build artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: inventory-management-app # Nombre del artefacto
+      #     path: target/*.jar # Ruta al archivo .jar (ajusta si es necesario)
