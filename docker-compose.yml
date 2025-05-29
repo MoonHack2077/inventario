@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # Servicio de la Base de Datos MariaDB
+  db_mariadb: # Cambiado de db_mysql a db_mariadb
+    image: mariadb:10.6 # Usando la imagen que especificaste
+    container_name: inventario_mariadb_db # Nombre del contenedor para MariaDB
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: root # Contraseña root que especificaste (considera una más fuerte para producción)
+      MARIADB_DATABASE: inventario_db # Nombre de nuestra base de datos de inventario
+      MARIADB_USER: inventario_user # Crearemos un usuario específico para la app
+      MARIADB_PASSWORD:  # Contraseña para inventario_user (¡cámbiala!)
+    ports:
+      - "3306:3306" # Mapeo de puertos (puedes cambiar el puerto del host si el 3306 está ocupado)
+    volumes:
+      - mariadb_inventario_data:/var/lib/mysql # Volumen para persistir datos de MariaDB
+    networks:
+      - inventario-network
+
+  # Servicio de tu Aplicación Spring Boot
+  inventario-app:
+    build: .
+    container_name: inventario_spring_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db_mariadb # Ahora depende de db_mariadb
+    environment:
+      SPRING_APPLICATION_NAME: gestion-inventario
+      # Variables para conectar Spring Boot a MariaDB
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db_mariadb:3306/inventario_db?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: inventario_user
+      SPRING_DATASOURCE_PASSWORD: inventario_password_seguro
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.mariadb.jdbc.Driver # Driver de MariaDB
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MariaDBDialect # Dialecto para MariaDB
+      # Opcional: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MariaDB106Dialect # Para MariaDB 10.6
+      # JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+    networks:
+      - inventario-network
+
+  # Servicio de Jenkins (sin cambios respecto a la versión anterior)
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    container_name: inventario_jenkins
+    ports:
+      - "8090:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_inventario_data:/var/jenkins_home
+      # - /var/run/docker.sock:/var/run/docker.sock # Opcional
+      # - /usr/bin/docker:/usr/bin/docker # Opcional
+    networks:
+      - inventario-network
+
+volumes:
+  mariadb_inventario_data: # Volumen para MariaDB
+  jenkins_inventario_data:
+
+networks:
+  inventario-network:
+    driver: bridge
